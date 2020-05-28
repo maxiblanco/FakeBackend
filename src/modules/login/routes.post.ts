@@ -9,9 +9,11 @@ var bcrypt = require("bcrypt");
 
 const saltRounds = 12;
 /* el certificado RS256 esta pasado por base64 para poder guardarlo en un .env*/
-const rawpass = process.env.PASS ? process.env.PASS : "test"; //esto va en el .env
+/* const rawpass = process.env.PASS ? process.env.PASS : "test"; //esto va en el .env
 const buff = Buffer.from(rawpass, "base64");
-const clave = buff.toString("ascii");
+const clave = buff.toString("ascii"); */
+
+const clave = process.env.PASS
 
 //password pasada por bcrypt para probar:
 const pwd = "$2b$12$gdqaZlCcOh0DWyrfh45wSOEUeDh6PjNYklu7iLlcsjbklchudwypq";
@@ -36,7 +38,7 @@ router.post("/login", async (req: any, res: any) => {
   //socotroco decodificado:
   console.log(db64.username);
 
-  const token = jwt.sign(getJWT_body(username), clave, { algorithm: "RS256" });
+  const token = jwt.sign(getJWT_body(username), clave/* , { algorithm: "RS256" } */); // Removed algorithm
   let response = {
     access_token: token,
     expires_in: 300,
