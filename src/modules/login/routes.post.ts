@@ -1,11 +1,11 @@
-import { randomBytes } from "crypto";
+import { randomBytes } from 'crypto';
 
-const { getJWT_body } = require("@utils/jwt-body");
+const { getJWT_body } = require('@utils/jwt-body');
 /* esto lo separo en modulitos luego, es para sacarlo rapido*/
-var express = require("express");
+var express = require('express');
 var router = express.Router();
-var jwt = require("jsonwebtoken");
-var bcrypt = require("bcrypt");
+var jwt = require('jsonwebtoken');
+var bcrypt = require('bcrypt');
 
 const saltRounds = 12;
 /* el certificado RS256 esta pasado por base64 para poder guardarlo en un .env*/
@@ -13,17 +13,17 @@ const saltRounds = 12;
 const buff = Buffer.from(rawpass, "base64");
 const clave = buff.toString("ascii"); */
 
-const clave = process.env.PASS
+const clave = process.env.PASS;
 
 //password pasada por bcrypt para probar:
-const pwd = "$2b$12$gdqaZlCcOh0DWyrfh45wSOEUeDh6PjNYklu7iLlcsjbklchudwypq";
+const pwd = '$2b$12$gdqaZlCcOh0DWyrfh45wSOEUeDh6PjNYklu7iLlcsjbklchudwypq';
 
-router.post("/login", async (req: any, res: any) => {
+router.post('/login', async (req: any, res: any) => {
   const { username, password } = req.body;
   //vamo a comparar la pwd:
   await bcrypt.compare(password, pwd).then(function (samePassword: any) {
     if (!samePassword) {
-      res.status(403).send("no passwd");
+      res.status(403).send('no passwd');
     }
   });
   const b64 = Buffer.from(
@@ -32,24 +32,27 @@ router.post("/login", async (req: any, res: any) => {
       password: password,
       id: randomBytes(45),
     })
-  ).toString("base64");
+  ).toString('base64');
 
-  const db64 = JSON.parse(Buffer.from(b64, "base64").toString());
+  const db64 = JSON.parse(Buffer.from(b64, 'base64').toString());
   //socotroco decodificado:
   console.log(db64.username);
 
-  const token = jwt.sign(getJWT_body(username), clave/* , { algorithm: "RS256" } */); // Removed algorithm
+  const token = jwt.sign(
+    getJWT_body(username),
+    clave /* , { algorithm: "RS256" } */
+  ); // Removed algorithm
   let response = {
     access_token: token,
     expires_in: 300,
-    token_type: "Bearer",
+    token_type: 'Bearer',
     refresh_token: b64,
-    scope: "dds_be openid",
+    scope: 'dds_be openid',
   };
-  res.set("Content-Type", "application/json").json(response).end();
+  res.set('Content-Type', 'application/json').json(response).end();
 });
 
-router.post("/signup", async (req: any, res: any) => {
+router.post('/signup', async (req: any, res: any) => {
   const { username, password } = req.body;
   //vamo a comparar la pwd:
   await bcrypt.hash(password, saltRounds).then(function (hashedPassword: any) {
@@ -58,18 +61,18 @@ router.post("/signup", async (req: any, res: any) => {
   res.send(`usa el login ahora! ${username}`).end();
 });
 
-router.post("/refresh", async (req: any, res: any) => {
+router.post('/refresh', async (req: any, res: any) => {
   const { refresh_token } = req.body;
 
   //extraemos el username y el password del refresh_token
   const { username, password } = JSON.parse(
-    Buffer.from(refresh_token, "base64").toString()
+    Buffer.from(refresh_token, 'base64').toString()
   );
 
   //vamo a comparar la pwd:
   await bcrypt.compare(password, pwd).then(function (samePassword: any) {
     if (!samePassword) {
-      res.status(403).send("no passwd");
+      res.status(403).send('no passwd');
     }
 
     //creamos nuevo refresh token
@@ -79,21 +82,24 @@ router.post("/refresh", async (req: any, res: any) => {
         password: password,
         id: randomBytes(45),
       })
-    ).toString("base64");
+    ).toString('base64');
 
     // creamos y firmamos el nuevo JWT
-    const token = jwt.sign(getJWT_body(username), clave, {
+    const token = jwt.sign(
+      getJWT_body(username),
+      clave /* {
       algorithm: "RS256",
-    });
+    } */
+    );
     let response = {
       access_token: token,
       expires_in: 300,
-      token_type: "Bearer",
+      token_type: 'Bearer',
       refresh_token: b64,
-      scope: "dds_be openid",
+      scope: 'dds_be openid',
     };
     //enviamos la response con el JWT y el refresh_token
-    res.set("Content-Type", "application/json").json(response).end();
+    res.set('Content-Type', 'application/json').json(response).end();
   });
 });
 
