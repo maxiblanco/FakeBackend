@@ -1,9 +1,9 @@
-var express = require("express");
+var express = require('express');
 var router = express.Router();
 // utils propias
-const { readJSON } = require("@utils/handleJson");
+const { readJSON } = require('@utils/handleJson');
 
-router.get("/api/post", function(req, res, next) {
+router.get('/api/post', function(req, res, next) {
   const data = readJSON();
   try {
     res
@@ -13,7 +13,7 @@ router.get("/api/post", function(req, res, next) {
   } catch (ex) {
     res
       .status(500)
-      .json({ error: "error con el json", debug: ex.message })
+      .json({ error: 'error con el json', debug: ex.message })
       .end();
   }
 
